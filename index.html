@@ -1,4 +1,4 @@
-<!-- Version: #5 -->
+<!-- Version: #8 -->
 <!DOCTYPE html>
 <html lang="no">
 <head>
@@ -20,10 +20,27 @@
 
             <div id="intro-page" class="page visible">
                 <h1>BUS Lærerrebus</h1>
-                <p>Velkommen til en liten digital utfordring! Skriv inn gruppekoden for å starte.</p>
-                <input type="text" id="team-code-input" placeholder="Gruppekode (f.eks. TEAM1)">
-                <button id="start-with-team-code-button">Start Rebus</button>
-                <div class="feedback" id="team-code-feedback"></div>
+                
+                <div id="auth-section">
+                    <h2>Logg inn Lag</h2>
+                    <p>Bruk utdelt lagnavn og passord.</p>
+                    <div>
+                        <label for="auth-teamname-input">Lagnavn (LAG1 eller LAG2):</label>
+                        <input type="text" id="auth-teamname-input" placeholder="f.eks. LAG1">
+                    </div>
+                    <div>
+                        <label for="auth-password-input">Passord:</label>
+                        <input type="password" id="auth-password-input" placeholder="Passord">
+                    </div>
+                    <button id="login-button">Logg inn</button>
+                    <!-- Registreringsknapp fjernet -->
+                    <div class="feedback" id="auth-feedback"></div>
+                </div>
+
+                <div id="team-welcome-section" style="display: none;"> <!-- Omdøpt fra team-code-entry-section -->
+                    <p>Velkommen <span id="loggedInTeamName"></span>! Rebusen starter/fortsetter automatisk.</p>
+                    <button id="logout-button" style="background-color: #dc3545; border-color: #dc3545;">Logg ut</button>
+                </div>
             </div>
 
             <!-- Poengvisning -->
@@ -48,7 +65,7 @@
                     <div class="feedback" id="feedback-task-1"></div>
                     <div class="attempt-counter" id="attempts-1" style="font-size:0.9em; margin-top:5px;"></div>
                 </div>
-                <button class="dev-reset-button">Tilbake til Start</button>
+                <button class="dev-reset-button">Logg ut & Nullstill Fremgang</button>
             </div>
 
             <!-- POST 2 -->
@@ -68,7 +85,7 @@
                     <div class="feedback" id="feedback-task-2"></div>
                     <div class="attempt-counter" id="attempts-2" style="font-size:0.9em; margin-top:5px;"></div>
                 </div>
-                <button class="dev-reset-button">Tilbake til Start</button>
+                <button class="dev-reset-button">Logg ut & Nullstill Fremgang</button>
             </div>
 
             <div id="finale-page" class="page">
@@ -76,7 +93,7 @@
                 <p>Godt jobbet! Alle oppgaver er løst.</p>
                 <p>Endelig poengsum: <span id="final-score">0</span></p>
                 <p>Nå går turen tilbake til <strong>Lærerværelset</strong>!</p>
-                <button class="dev-reset-button" style="margin-top: 30px;">Start På Nytt</button>
+                <button class="dev-reset-button" style="margin-top: 30px;">Logg ut & Nullstill Fremgang</button>
             </div>
         </div>
 
@@ -88,19 +105,19 @@
         </div>
     </div>
 
-    <!-- Firebase SDK (compat version for enklere integrasjon med eksisterende global script.js) -->
-    <!-- Vi bruker versjon 9.22.1 for compat-bibliotekene som et stabilt utgangspunkt -->
+    <!-- Firebase SDK (compat version) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
     <script>
-      // Din Firebase konfigurasjon (fra Firebase Console)
+      // Din Firebase konfigurasjon
       const firebaseConfig = {
         apiKey: "AIzaSyDZ5Kjnkuz52X-SBdFWketKFkUUFo8KZBI",
         authDomain: "rebusmk2.firebaseapp.com",
         projectId: "rebusmk2",
-        storageBucket: "rebusmk2.firebasestorage.app", // Merk: Firebase kan vise .appspot.com, men .firebasestorage.app er også ok.
+        storageBucket: "rebusmk2.firebasestorage.app",
         messagingSenderId: "537835310851",
         appId: "1:537835310851:web:5fb4bc5f0df058b10a6336",
         measurementId: "G-T144H1GHJV"
@@ -109,18 +126,16 @@
       // Initialiser Firebase
       firebase.initializeApp(firebaseConfig);
       
-      // Initialiser tjenester og gjør dem globalt tilgjengelige for script.js
-      // Dette er for å gjøre overgangen enklere med ditt eksisterende script.
       const db = firebase.firestore(); 
-      const analytics = firebase.analytics(); // Analytics er nå også initialisert
+      const analytics = firebase.analytics();
+      const auth = firebase.auth();
     </script>
 
     <script src="script.js"></script> 
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5qUjSj9WyUKsZPljvHfp9RHd-dUjMblk&callback=initMap">
-        <!-- Din Google Maps API-nøkkel (separat fra Firebase) -->
     </script>
 
 </body>
 </html>
-<!-- Version: #5 -->
+<!-- Version: #8 -->
