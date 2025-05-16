@@ -1,4 +1,4 @@
-/* Version: #11 */
+/* Version: #12 */
 
 // === GLOBALE VARIABLER ===
 let map;
@@ -108,21 +108,9 @@ async function loadTeamDataForUser(user) {
         const docRef = db.collection('teams').doc(user.uid);
         const docSnap = await docRef.get();
 
-        // === START DEBUGGING LINES ===
-        console.log("--- DEBUG START ---");
-        console.log("docSnap object:", docSnap);
-        if (docSnap && typeof docSnap.exists === 'function') {
-            console.log("docSnap.exists() returns:", docSnap.exists());
-        } else if (docSnap) {
-            console.log("docSnap.exists IS NOT A FUNCTION. typeof docSnap.exists:", typeof docSnap.exists, "Value:", docSnap.exists);
-        } else {
-            console.log("docSnap is null or undefined.");
-        }
-        console.log("--- DEBUG END ---");
-        // === END DEBUGGING LINES ===
-
-        if (docSnap && typeof docSnap.exists === 'function' && docSnap.exists()) { 
-            currentTeamData = docSnap.data();
+        // TILBAKESTILT TIL Å BRUKE .exists SOM EN BOOLEAN PROPERTY
+        if (docSnap && docSnap.exists) { 
+            currentTeamData = docSnap.data(); // .data() er fortsatt en funksjon
             console.log("Team data loaded from Firestore:", currentTeamData);
 
             if (!currentTeamData || typeof currentTeamData.teamCode !== 'string' ||
@@ -138,7 +126,7 @@ async function loadTeamDataForUser(user) {
             
             return true;
         } else {
-            console.warn(`No data document found in Firestore for user UID ${user.uid} (or docSnap.exists is not as expected).`);
+            console.warn(`No data document found in Firestore for user UID ${user.uid} (docSnap.exists is false or docSnap is undefined).`);
             currentTeamData = null;
             return false;
         }
@@ -411,4 +399,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     console.log("DOM content loaded. Auth listener is active.");
 });
-/* Version: #11 */
+/* Version: #12 */
