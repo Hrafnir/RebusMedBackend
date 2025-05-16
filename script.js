@@ -1,4 +1,4 @@
-/* Version: #10 */
+/* Version: #11 */
 
 // === GLOBALE VARIABLER ===
 let map;
@@ -12,15 +12,12 @@ let finishMarker = null;
 // 'db', 'analytics', 'auth' er globale variabler definert i index.html
 
 // === GLOBAL KONFIGURASJON ===
-const FICTITIOUS_DOMAIN = "@rebus.game"; // Brukes for å lage "e-post" for auth
-const TOTAL_POSTS = 2; // VIKTIG: Endre denne hvis du har flere poster
-// Hvis TOTAL_POSTS endres, må POST_LOCATIONS, POST_UNLOCK_HINTS, POST_UNLOCK_CODES, CORRECT_TASK_ANSWERS også utvides tilsvarende.
-// HTML-en må også ha sider for alle postene.
+const FICTITIOUS_DOMAIN = "@rebus.game"; 
+const TOTAL_POSTS = 2; 
 
 const POST_LOCATIONS = [
     { lat: 60.81260478331276, lng: 10.673852939210269, title: "Post 1", name: "Demonstrasjonssted Alfa"},
     { lat: 60.812993, lng: 10.672853, title: "Post 2", name: "Demonstrasjonssted Beta"}
-    // Legg til flere her hvis TOTAL_POSTS > 2
 ];
 const START_LOCATION = { lat: 60.8127, lng: 10.6737, title: "Startområde Demo" };
 const FINISH_LOCATION = { lat: 60.8124, lng: 10.6734, title: "Mål: Lærerværelset (Plassholder)" };
@@ -28,18 +25,15 @@ const FINISH_LOCATION = { lat: 60.8124, lng: 10.6734, title: "Mål: Lærerværel
 const POST_UNLOCK_HINTS = {
     1: "Et sted for flygende baller.",
     2: "Arbeidslivets forpost."
-    // Legg til flere her
 };
 
 const POST_UNLOCK_CODES = {
     1: "PEDAGOG",
     2: "LÆRING"
-    // Legg til flere her
 };
 const CORRECT_TASK_ANSWERS = {
     1: "RICHARD HØGÅS",
     2: "KNUT PHARO"
-    // Legg til flere her
 };
 const MAX_ATTEMPTS_PER_TASK = 5;
 const POINTS_PER_CORRECT_TASK = 5;
@@ -114,7 +108,20 @@ async function loadTeamDataForUser(user) {
         const docRef = db.collection('teams').doc(user.uid);
         const docSnap = await docRef.get();
 
-        if (docSnap.exists()) { // NØYAKTIG KORREKSJON HER
+        // === START DEBUGGING LINES ===
+        console.log("--- DEBUG START ---");
+        console.log("docSnap object:", docSnap);
+        if (docSnap && typeof docSnap.exists === 'function') {
+            console.log("docSnap.exists() returns:", docSnap.exists());
+        } else if (docSnap) {
+            console.log("docSnap.exists IS NOT A FUNCTION. typeof docSnap.exists:", typeof docSnap.exists, "Value:", docSnap.exists);
+        } else {
+            console.log("docSnap is null or undefined.");
+        }
+        console.log("--- DEBUG END ---");
+        // === END DEBUGGING LINES ===
+
+        if (docSnap && typeof docSnap.exists === 'function' && docSnap.exists()) { 
             currentTeamData = docSnap.data();
             console.log("Team data loaded from Firestore:", currentTeamData);
 
@@ -131,12 +138,12 @@ async function loadTeamDataForUser(user) {
             
             return true;
         } else {
-            console.warn(`No data document found in Firestore for user UID ${user.uid}. This user account exists, but has no associated team data.`);
+            console.warn(`No data document found in Firestore for user UID ${user.uid} (or docSnap.exists is not as expected).`);
             currentTeamData = null;
             return false;
         }
     } catch (error) {
-        console.error("Error loading team data from Firestore: ", error);
+        console.error("Error loading team data from Firestore (inside catch): ", error);
         currentTeamData = null;
         alert("En feil oppstod under lasting av lagret fremgang. Sjekk konsollen.");
         return false;
@@ -227,8 +234,8 @@ async function loginTeam(teamName, password) {
 
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        console.log("Bruker logget inn via loginTeam:", userCredential.user.uid);
-        if (authFeedback) {
+        console.log("Bruker logget inn via loginTeam funksjon (UID):", userCredential.user.uid);
+        if (authFeedback) { 
             authFeedback.textContent = 'Innlogging vellykket! Laster rebus...';
             authFeedback.classList.add('success');
         }
@@ -237,10 +244,10 @@ async function loginTeam(teamName, password) {
         let message = "Feil ved innlogging.";
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             message = "Ugyldig lagnavn eller passord.";
-        } else if (error.code === 'auth/invalid-email') {
-            message = "Lagnavn-format er feil (forventet f.eks. LAG1).";
+        } else if (error.code === 'auth/invalid-email') { 
+            message = "Lagnavn-format er feil eller mangler.";
         }
-        if (authFeedback) {
+        if (authFeedback) { 
             authFeedback.textContent = message;
             authFeedback.classList.add('error');
         }
@@ -251,10 +258,10 @@ auth.onAuthStateChanged(async (user) => {
     const authSection = document.getElementById('auth-section');
     const teamWelcomeSection = document.getElementById('team-welcome-section');
     const loggedInTeamNameSpan = document.getElementById('loggedInTeamName');
-    const authFeedback = document.getElementById('auth-feedback');
+    const authFeedback = document.getElementById('auth-feedback'); 
 
     if (user) {
-        currentUser = user;
+        currentUser = user; 
         console.log("Auth state changed: User is logged in.", user.uid, user.email);
         
         if (authSection) authSection.style.display = 'none';
@@ -264,10 +271,13 @@ auth.onAuthStateChanged(async (user) => {
         const hasLoadedTeamData = await loadTeamDataForUser(user);
 
         if (hasLoadedTeamData && currentTeamData) {
-            if(loggedInTeamNameSpan && currentTeamData.name) loggedInTeamNameSpan.textContent = currentTeamData.name;
-            else if (loggedInTeamNameSpan) loggedInTeamNameSpan.textContent = user.email; 
+            if(loggedInTeamNameSpan && currentTeamData.name) {
+                loggedInTeamNameSpan.textContent = currentTeamData.name;
+            } else if (loggedInTeamNameSpan) {
+                loggedInTeamNameSpan.textContent = user.email; 
+            }
 
-            showTabContent('rebus');
+            showTabContent('rebus'); 
             if (currentTeamData.completedPostsCount >= TOTAL_POSTS) {
                 showRebusPage('finale-page');
                 if (map) updateMapMarker(null, true);
@@ -284,7 +294,7 @@ auth.onAuthStateChanged(async (user) => {
                             console.warn(`Mangler lokasjonsdata for post ${currentExpectedPostId} ved oppstart av kart.`);
                         }
                     } else {
-                        console.error(`Post page 'post-${currentExpectedPostId}-page' not found in HTML. TOTAL_POSTS (${TOTAL_POSTS}) might be misconfigured or HTML incomplete for ${currentExpectedPostId}.`);
+                        console.error(`Post page 'post-${currentExpectedPostId}-page' not found in HTML. TOTAL_POSTS (${TOTAL_POSTS}) may be misconfigured or HTML incomplete for post ID ${currentExpectedPostId}.`);
                         showRebusPage('finale-page'); 
                         if (map) updateMapMarker(null, true);
                     }
@@ -297,15 +307,21 @@ auth.onAuthStateChanged(async (user) => {
             updateScoreDisplay();
         } else {
             console.warn(`User ${user.email} logged in, but no valid team data found in Firestore for UID ${user.uid}.`);
-            if(loggedInTeamNameSpan) loggedInTeamNameSpan.textContent = user.email;
-            showRebusPage('intro-page'); 
-            if (authFeedback) {
-                authFeedback.textContent = "Teamdata ikke funnet for denne brukeren. Kontakt arrangør.";
-                authFeedback.className = 'feedback error';
+            if(loggedInTeamNameSpan) loggedInTeamNameSpan.textContent = user.email; 
+            
+            if (teamWelcomeSection && teamWelcomeSection.style.display !== 'none' && authFeedback) {
+                 authFeedback.textContent = "Teamdata ikke funnet for denne brukeren. Kontakt arrangør.";
+                 authFeedback.className = 'feedback error';
+                 authFeedback.style.display = 'block'; 
+            } else if (authFeedback) { 
+                 authFeedback.textContent = "Teamdata ikke funnet. Kontakt arrangør.";
+                 authFeedback.className = 'feedback error';
             }
+
+            showRebusPage('intro-page'); 
             if (document.getElementById('score-display')) document.getElementById('score-display').style.display = 'none';
-            if (authSection) authSection.style.display = 'none';
-            if (teamWelcomeSection) teamWelcomeSection.style.display = 'block';
+            if (authSection) authSection.style.display = 'none'; 
+            if (teamWelcomeSection) teamWelcomeSection.style.display = 'block'; 
         }
 
     } else { 
@@ -378,21 +394,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         button.addEventListener('click', async () => {
             if (currentUser) {
                 if (confirm("Vil du logge ut og nullstille all fremgang for dette laget? (Data i databasen nullstilles, men laget slettes ikke).")) {
-                    await resetProgressForCurrentTeam();
-                    await auth.signOut();
+                    await resetProgressForCurrentTeam(); 
+                    await auth.signOut(); 
                 }
             } else {
                 alert("Ingen bruker er logget inn. Kan ikke nullstille fremgang.");
-                resetAllUIOnLogout();
+                resetAllUIOnLogout(); 
             }
         });
     });
     
-    if (!auth.currentUser) {
+    if (!auth.currentUser) { 
         resetAllUIOnLogout();
-        showTabContent('rebus');
-        showRebusPage('intro-page');
+        showTabContent('rebus'); 
+        showRebusPage('intro-page'); 
     }
     console.log("DOM content loaded. Auth listener is active.");
 });
-/* Version: #10 */
+/* Version: #11 */
