@@ -1,4 +1,4 @@
-/* Version: #9 */
+/* Version: #10 */
 
 // === GLOBALE VARIABLER ===
 let map;
@@ -61,7 +61,7 @@ window.initMap = function() {
     if (currentTeamData && currentUser) {
         if (currentTeamData.completedPostsCount < TOTAL_POSTS) {
             const currentPostGlobalId = currentTeamData.postSequence[currentTeamData.currentPostArrayIndex];
-            if (currentPostGlobalId && POST_LOCATIONS[currentPostGlobalId-1]) { // Sjekk at post-ID og lokasjon er gyldig
+            if (currentPostGlobalId && POST_LOCATIONS[currentPostGlobalId-1]) {
                  updateMapMarker(currentPostGlobalId, false);
             } else {
                 console.warn(`Ugyldig currentPostGlobalId (${currentPostGlobalId}) eller manglende lokasjon ved kartinitiering.`);
@@ -114,7 +114,7 @@ async function loadTeamDataForUser(user) {
         const docRef = db.collection('teams').doc(user.uid);
         const docSnap = await docRef.get();
 
-        if (docSnap.exists()) { // KORRIGERT HER
+        if (docSnap.exists()) { // NØYAKTIG KORREKSJON HER
             currentTeamData = docSnap.data();
             console.log("Team data loaded from Firestore:", currentTeamData);
 
@@ -147,17 +147,14 @@ async function resetProgressForCurrentTeam() {
     if (currentUser && currentTeamData) {
         try {
             console.log(`Resetting progress for team ${currentTeamData.name} (UID: ${currentUser.uid}) in Firestore...`);
-            // Hent den opprinnelige postsekvensen slik at den ikke overskrives hvis den ikke er i progressToReset
             const originalPostSequence = currentTeamData.postSequence || []; 
             const originalTeamCode = currentTeamData.teamCode || "Ukjent Lagkode";
             const originalName = currentTeamData.name || "Ukjent Lagnavn";
 
             const progressToReset = {
-                // Behold disse fra eksisterende data
                 teamCode: originalTeamCode,
                 name: originalName,
                 postSequence: originalPostSequence,
-                // Nullstill disse
                 currentPostArrayIndex: 0,
                 completedPostsCount: 0,
                 completedGlobalPosts: {},
@@ -165,8 +162,6 @@ async function resetProgressForCurrentTeam() {
                 score: 0,
                 taskAttempts: {}
             };
-            // Bruk set for å sikre at kun disse feltene er i dokumentet etter reset,
-            // i tilfelle det var gamle/uønskede felter der.
             await db.collection('teams').doc(currentUser.uid).set(progressToReset);
             console.log(`Progress reset in Firestore for UID ${currentUser.uid}.`);
             await loadTeamDataForUser(currentUser); 
@@ -264,13 +259,13 @@ auth.onAuthStateChanged(async (user) => {
         
         if (authSection) authSection.style.display = 'none';
         if (teamWelcomeSection) teamWelcomeSection.style.display = 'block';
-        if (authFeedback) { authFeedback.textContent = ''; authFeedback.className = 'feedback';} // Fjern evt. feilmld
+        if (authFeedback) { authFeedback.textContent = ''; authFeedback.className = 'feedback';}
         
         const hasLoadedTeamData = await loadTeamDataForUser(user);
 
         if (hasLoadedTeamData && currentTeamData) {
             if(loggedInTeamNameSpan && currentTeamData.name) loggedInTeamNameSpan.textContent = currentTeamData.name;
-            else if (loggedInTeamNameSpan) loggedInTeamNameSpan.textContent = user.email; // Fallback
+            else if (loggedInTeamNameSpan) loggedInTeamNameSpan.textContent = user.email; 
 
             showTabContent('rebus');
             if (currentTeamData.completedPostsCount >= TOTAL_POSTS) {
@@ -282,7 +277,7 @@ auth.onAuthStateChanged(async (user) => {
                     const currentExpectedPostId = currentTeamData.postSequence[currentPostArrayIndex];
                      if (document.getElementById(`post-${currentExpectedPostId}-page`)) {
                         showRebusPage(`post-${currentExpectedPostId}-page`);
-                        if (map && POST_LOCATIONS[currentExpectedPostId-1]) { // Sjekk at lokasjon finnes
+                        if (map && POST_LOCATIONS[currentExpectedPostId-1]) {
                             updateMapMarker(currentExpectedPostId, false);
                             startContinuousUserPositionUpdate();
                         } else if (map) {
@@ -309,12 +304,11 @@ auth.onAuthStateChanged(async (user) => {
                 authFeedback.className = 'feedback error';
             }
             if (document.getElementById('score-display')) document.getElementById('score-display').style.display = 'none';
-            // Ikke vis auth-seksjonen igjen her, da brukeren _er_ logget inn. De må logge ut.
-            if (authSection) authSection.style.display = 'none'; // Sørg for at den er skjult
-            if (teamWelcomeSection) teamWelcomeSection.style.display = 'block'; // Vis "Velkommen..." men ingen rebus starter
+            if (authSection) authSection.style.display = 'none';
+            if (teamWelcomeSection) teamWelcomeSection.style.display = 'block';
         }
 
-    } else { // Bruker er logget ut
+    } else { 
         console.log("Auth state changed: User is logged out.");
         currentUser = null;
         currentTeamData = null;
@@ -401,4 +395,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     console.log("DOM content loaded. Auth listener is active.");
 });
-/* Version: #9 */
+/* Version: #10 */
